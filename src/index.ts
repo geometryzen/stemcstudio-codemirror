@@ -8,7 +8,7 @@ export interface Extension {
 }
 
 export interface Text {
-
+    toString(): string;
 }
 
 export interface EditorState {
@@ -44,4 +44,13 @@ export interface EditorView {
 export function createEditorView(config?: EditorViewConfig): EditorView {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new CmEditorView(config as any) as unknown as EditorView;
+}
+
+export interface StyleSpec {
+
+}
+
+export function theme(spec: { [selector: string]: StyleSpec }, options?: { dark?: boolean }): Extension {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return CmEditorView.theme(spec as any, options);
 }
