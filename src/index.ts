@@ -1,10 +1,15 @@
 
-import { javascript } from "@codemirror/lang-javascript";
-import { basicSetup /*,minimalSetup*/, EditorView } from "codemirror";
+//import { javascript } from "@codemirror/lang-javascript";
+import { /*basicSetup*/ /*,minimalSetup*/ EditorView as CmEditorView } from "codemirror";
 
-export function create_basic_editor_view(parent: Element | DocumentFragment): EditorView {
-    return new EditorView({
-        extensions: [basicSetup, javascript()],
-        parent: parent
-    });
+export interface EditorViewConfig {
+    parent?: Element | DocumentFragment;
+}
+
+export interface EditorView {
+
+}
+
+export function create_editor_view(config?: EditorViewConfig): EditorView {
+    return new CmEditorView(config);
 }
