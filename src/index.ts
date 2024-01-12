@@ -7,8 +7,23 @@ export interface Extension {
 
 }
 
-export interface EditorViewConfig {
+export interface Text {
+
+}
+
+export interface EditorState {
+    /**
+     * The current document.
+     */
+    doc: Text;
+}
+
+export interface EditorStateConfig {
+    doc?: string | Text;
     extensions?: Extension[];
+}
+
+export interface EditorViewConfig extends EditorStateConfig {
     parent?: Element | DocumentFragment;
 }
 
@@ -18,14 +33,15 @@ export interface ChangeSet {
 }
 
 export interface Transaction {
-    changes: ChangeSet;
+    changes: ChangeSet | ChangeSet[];
 }
 
 export interface EditorView {
+    state: EditorState;
     dispatch(tr: Transaction): void;
 }
 
-export function create_editor_view(config?: EditorViewConfig): EditorView {
+export function createEditorView(config?: EditorViewConfig): EditorView {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new CmEditorView(config as any) as unknown as EditorView;
 }

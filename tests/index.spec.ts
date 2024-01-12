@@ -1,7 +1,15 @@
-import { basicSetup, create_editor_view, EditorView, EditorViewConfig, javascript, minimalSetup, Transaction } from '../src/index';
+import { basicSetup, ChangeSet, createEditorView, EditorState, EditorView, EditorViewConfig, javascript, minimalSetup, Text, Transaction } from '../src/index';
 
+class TestText implements Text {
+
+}
+
+class TestEditorState implements EditorState {
+    readonly doc: Text = new TestText();
+}
 
 class TestEditorView implements EditorView {
+    readonly state: EditorState = new TestEditorState();
     constructor(readonly config?: EditorViewConfig) {
 
     }
@@ -15,7 +23,7 @@ function create_test_editor_view(config?: EditorViewConfig): EditorView {
 }
 
 test("create_editor_view is a function", function () {
-    expect(typeof create_editor_view).toBe('function');
+    expect(typeof createEditorView).toBe('function');
 });
 
 test("basicSetup is an object", function () {
@@ -35,9 +43,16 @@ test("test_editor_view is a function", function () {
 });
 
 test("Document Changes", function () {
-    const view = create_test_editor_view();
+    const view = create_test_editor_view({
+        doc: "...",
+        extensions: [basicSetup],
+        parent: void 0
+    });
     // Insert text at the start of the document
     view.dispatch({
         changes: { from: 0, insert: "#!/usr/bin/env node\n" }
     });
+    view.state.doc.toString();
+    const changes: ChangeSet[] = [];
+    view.dispatch({ changes });
 });
