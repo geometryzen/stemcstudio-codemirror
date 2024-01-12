@@ -1,8 +1,10 @@
-/**
- * Constructs a personalized string that can be used to greet a person.
- * @param name The name of the person receiving the greeting.
- * @returns a greeting string containing the name of the person receiving the greeting.
- */
-export function greeting(name: string): string {
-    return `Hello, ${name}!`;
+
+import { javascript } from "@codemirror/lang-javascript";
+import { basicSetup /*,minimalSetup*/, EditorView } from "codemirror";
+
+export function create_basic_editor_view(parent: Element | DocumentFragment): EditorView {
+    return new EditorView({
+        extensions: [basicSetup, javascript()],
+        parent: parent
+    });
 }

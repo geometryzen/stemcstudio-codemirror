@@ -1,7 +1,7 @@
 {
-    "name": "@geometryzen/my-lib",
+    "name": "@geometryzen/codemirror",
     "version": "0.9.7",
-    "description": "My Library",
+    "description": "CodeMirror Editor",
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -22,8 +22,8 @@
         "dist/system/index.min.js.map"
     ],
     "keywords": [
-        "my",
-        "lib"
+        "geometryzen",
+        "codemirror"
     ],
     "publishConfig": {
         "access": "public"
@@ -45,7 +45,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/geometryzen/my-lib.git"
+        "url": "git+https://github.com/geometryzen/stemcstudio-codemirror.git"
     },
     "author": {
         "name": "David Geo Holmes",
@@ -53,9 +53,9 @@
     },
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/geometryzen/my-lib/issues"
+        "url": "https://github.com/geometryzen/stemcstudio-codemirror/issues"
     },
-    "homepage": "https://github.com/geometryzen/my-lib#readme",
+    "homepage": "https://github.com/geometryzen/stemcstudio-codemirror#readme",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-node-resolve": "^15.2.3",
@@ -79,5 +79,9 @@
         "ts-node": "^10.9.2",
         "typedoc": "^0.25.7",
         "typescript": "^5.3.3"
+    },
+    "dependencies": {
+        "@codemirror/lang-javascript": "^6.2.1",
+        "codemirror": "^6.0.1"
     }
 }

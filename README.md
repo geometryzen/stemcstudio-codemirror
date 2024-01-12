@@ -1,8 +1,8 @@
-# my-lib
+# stemcstudio-codemirror
 
-[![version](https://img.shields.io/npm/v/@geometryzen/my-lib.svg)](https://www.npmjs.com/package/@geometryzen/my-lib) 
+[![version](https://img.shields.io/npm/v/@geometryzen/codemirror.svg)](https://www.npmjs.com/package/@geometryzen/codemirror) 
 
-[![npm downloads](https://img.shields.io/npm/dm/@geometryzen/my-lib.svg)](https://npm-stat.com/charts.html?package=@geometryzen/my-lib&from=2022-09-01)
+[![npm downloads](https://img.shields.io/npm/dm/@geometryzen/codemirror.svg)](https://npm-stat.com/charts.html?package=@geometryzen/codemirror&from=2024-01-11)
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
