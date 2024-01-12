@@ -53,6 +53,36 @@ class TestEditorView implements EditorView {
     constructor(readonly config?: EditorViewConfig) {
 
     }
+    viewport: { from: number; to: number; };
+    visibleRanges: readonly {
+        from: number; // Insert text at the start of the document
+        // Insert text at the start of the document
+        to: number;
+    }[];
+    inView: boolean;
+    composing: boolean;
+    compositionStarted: boolean;
+    root: DocumentOrShadowRoot;
+    dom: HTMLElement;
+    scrollDOM: HTMLElement;
+    contentDOM: HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    update(transactions: readonly Transaction[]): void {
+        throw new Error('Method not implemented.');
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setState(newState: EditorState): void {
+        throw new Error('Method not implemented.');
+    }
+    themeClasses: string;
+    documentTop: number;
+    documentPadding: { top: number; bottom: number; };
+    scaleX: number;
+    scaleY: number;
+    contentHeight: number;
+    destroy(): void {
+        throw new Error('Method not implemented.');
+    }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     dispatch(tr: Transaction): void {
     }

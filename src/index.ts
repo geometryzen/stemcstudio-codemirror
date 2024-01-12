@@ -110,7 +110,25 @@ export interface TransactionSpec {
 
 export interface EditorView {
     state: EditorState;
+    viewport: { from: number, to: number };
+    visibleRanges: readonly { from: number, to: number }[];
+    inView: boolean;
+    composing: boolean;
+    compositionStarted: boolean;
+    root: DocumentOrShadowRoot;
+    dom: HTMLElement;
+    scrollDOM: HTMLElement;
+    contentDOM: HTMLElement;
     dispatch(...specs: TransactionSpec[]): void;
+    update(transactions: readonly Transaction[]): void;
+    setState(newState: EditorState): void;
+    themeClasses: string;
+    documentTop: number;
+    documentPadding: { top: number, bottom: number };
+    scaleX: number;
+    scaleY: number;
+    contentHeight: number;
+    destroy(): void;
 }
 
 export function createEditorView(config?: EditorViewConfig): EditorView {
