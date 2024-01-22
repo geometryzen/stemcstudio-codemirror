@@ -121,7 +121,7 @@ export class EditSession {
 }
 
 export interface EditSessionConfig {
-    doc?: string;// | Text;
+    document?: string;// | Text;
     selection?: Selection | { anchor: number, head?: number };
     extensions?: Extension[];
 }
@@ -191,24 +191,28 @@ export function create_editor(config: EditorConfig) {
 }
 
 export class Editor {
-    readonly #unkInner: CmEditorView;
-    #refCount = 1;
+    #unkInner: CmEditorView;
+    #refCount = 0;
     /**
      * @hidden
-     * @param config 
      */
     constructor(unkInner: CmEditorView) {
         this.#unkInner = assert_cm_editor_view(unkInner);
+        this.addRef();
     }
     #destructor(): void {
-        // eslint-disable-next-line no-console
-        console.log("EditorView.destroy(): void");
         this.#unkInner.destroy();
+        this.#unkInner = void 0;
     }
     get session(): EditSession {
         return new EditSession(this.#unkInner.state);
     }
     addRef(): void {
+        if (this.#refCount === 0) {
+            if (typeof this.#unkInner === 'undefined') {
+                throw new Error("Editor.addRef() zombie!");
+            }
+        }
         this.#refCount++;
     }
     focus(): void {
@@ -248,7 +252,7 @@ export class Editor {
 
 function cm_editor_view_config(config: EditorConfig = {}): CmEditorViewConfig {
     const retval: CmEditorViewConfig = {
-        doc: config.doc,
+        doc: config.document,
         extensions: cm_extensions(config.extensions),
         parent: config.parent,
         selection: unpack_selection(config.selection)

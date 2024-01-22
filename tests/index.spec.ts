@@ -1,4 +1,4 @@
-import { basicSetup, create_anchor_range, create_cursor_range, create_editor, EditorConfig, minimalSetup, Range } from '../src/index';
+import { basicSetup, create_anchor_range, create_cursor_range, create_editor, EditorConfig, EditSession, minimalSetup, Range } from '../src/index';
 
 test("basicSetup is an object", function () {
     expect(typeof basicSetup).toBe('object');
@@ -10,7 +10,7 @@ test("minimalSetup is an object", function () {
 
 xtest("Document Changes", function () {
     const config: EditorConfig = {
-        doc: "...",
+        document: "...",
         extensions: [basicSetup],
         parent: void 0
     };
@@ -23,6 +23,16 @@ xtest("Document Changes", function () {
         const cursor = create_cursor_range(8);
         const ranges: Range[] = [range, cursor];
         view.select(ranges, 1);
+        view.focus();
+        const hasFocus: boolean = view.hasFocus;
+        // eslint-disable-next-line no-console
+        console.log("hasFocus", hasFocus);
+        const session: EditSession = view.session;
+        const wordRange: Range = session.wordAt(0);
+        const from: number = wordRange.from;
+        const to: number = wordRange.to;
+        // eslint-disable-next-line no-console
+        console.log("wordAt", from, to);
     }
     finally {
         view.release();
