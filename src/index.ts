@@ -186,7 +186,8 @@ export interface EditorView {
 */
 
 export function create_editor(config: EditorConfig) {
-    return new Editor(config);
+    const unkInner = new CmEditorView(cm_editor_view_config(config));
+    return new Editor(unkInner);
 }
 
 export class Editor {
@@ -196,8 +197,13 @@ export class Editor {
      * @hidden
      * @param config 
      */
-    constructor(config: EditorConfig) {
-        this.#unkInner = new CmEditorView(cm_editor_view_config(config));
+    constructor(unkInner: CmEditorView) {
+        this.#unkInner = assert_cm_editor_view(unkInner);
+    }
+    #destructor(): void {
+        // eslint-disable-next-line no-console
+        console.log("EditorView.destroy(): void");
+        this.#unkInner.destroy();
     }
     get session(): EditSession {
         return new EditSession(this.#unkInner.state);
@@ -205,17 +211,21 @@ export class Editor {
     addRef(): void {
         this.#refCount++;
     }
+    focus(): void {
+        this.#unkInner.focus();
+    }
     insert(from: number, text: string): void {
         this.#unkInner.dispatch({
             changes: { from: from, insert: text }
         });
     }
-    release() {
+    get hasFocus(): boolean {
+        return this.#unkInner.hasFocus;
+    }
+    release(): void {
         this.#refCount--;
         if (this.#refCount === 0) {
-            // eslint-disable-next-line no-console
-            console.log("EditorView.destroy(): void");
-            this.#unkInner.destroy();
+            this.#destructor();
         }
     }
     select(ranges: readonly Range[], mainIndex?: number): void {
@@ -231,7 +241,7 @@ export class Editor {
     /**
      * @hidden
      */
-    get unkInner(): unknown {
+    get unkInner(): CmEditorView {
         return this.#unkInner;
     }
 }
@@ -263,7 +273,7 @@ export interface StyleSpec {
 
 }
 
-export function theme(spec: { [selector: string]: StyleSpec }, options?: { dark?: boolean }): Extension {
+export function create_theme(spec: { [selector: string]: StyleSpec }, options?: { dark?: boolean }): Extension {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return CmEditorView.theme(spec as any, options);
 }
@@ -274,13 +284,19 @@ export interface TagStyle {
 
 export class Selection {
     #unkInner: CmEditorSelection;
+    /**
+     * @hidden
+     */
     constructor(unkInner: CmEditorSelection) {
         this.#unkInner = assert_cm_editor_selection(unkInner);
     }
     get ranges(): Range[] {
         return this.#unkInner.ranges.map((range) => new Range(range));
     }
-    get unkInner(): unknown {
+    /**
+     * @hidden
+     */
+    get unkInner(): CmEditorSelection {
         return this.#unkInner;
     }
 }
@@ -360,7 +376,6 @@ function assert_cm_editor_state(unkInner: unknown): CmEditorState {
     }
 }
 
-/*
 function assert_cm_editor_view(unkInner: unknown): CmEditorView {
     if (unkInner instanceof CmEditorView) {
         return unkInner;
@@ -369,7 +384,6 @@ function assert_cm_editor_view(unkInner: unknown): CmEditorView {
         throw new Error();
     }
 }
-*/
 
 function assert_cm_selection_range(unkInner: unknown): CmSelectionRange {
     if (unkInner instanceof CmSelectionRange) {
