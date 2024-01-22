@@ -1,11 +1,17 @@
 
 export { basicSetup, minimalSetup } from "codemirror";
-import { EditorSelection as CmEditorSelection, SelectionRange as CmSelectionRange } from "@codemirror/state";
+import {
+    EditorSelection as CmEditorSelection,
+    EditorState as CmEditorState,
+    Extension as CmExtension,
+    SelectionRange as CmSelectionRange,
+    Text as CmText,
+    Transaction as CmTransaction
+} from "@codemirror/state";
+import { EditorViewConfig as CmEditorViewConfig } from "@codemirror/view";
 import { EditorView as CmEditorView } from "codemirror";
 
-export interface Extension {
-
-}
+type Extension = CmExtension;
 
 export interface Line {
     from: number;
@@ -14,7 +20,7 @@ export interface Line {
     text: string;
     length: number;
 }
-
+/*
 export interface Text {
     length: number;
     lines: number;
@@ -27,7 +33,25 @@ export interface Text {
     toString(): string;
     toJSON(): string[];
 }
+*/
 
+class Text {
+    #punkInner: CmText;
+    constructor(punkInner: unknown) {
+        this.#punkInner = assert_cm_text(punkInner);
+    }
+    /**
+     * 
+     */
+    /**
+     * 
+     * @returns the document as a string, using newline characters to separate lines.
+     */
+    toString(): string {
+        return this.#punkInner.toString();
+    }
+}
+/*
 export interface EditorSelection {
     ranges: SelectionRange;
     mainIndex: number;
@@ -36,7 +60,7 @@ export interface EditorSelection {
     addRange(range: SelectionRange, main?: boolean): EditorSelection;
     replaceRange(range: SelectionRange, which?: number): EditorSelection;
 }
-
+*/
 export interface ChangeDesc {
     length: number;
     newLength: number;
@@ -44,25 +68,8 @@ export interface ChangeDesc {
     invertedDesc: ChangeDesc;
     composeDesc(other: ChangeDesc): ChangeDesc;
 }
-
-export interface SelectionRange {
-    from: number;
-    to: number;
-    anchor: number;
-    head: number;
-    empty: boolean;
-    assoc: -1 | 0 | 1;
-    bidiLevel: number | null;
-    goalColumn: number | undefined;
-    map(change: ChangeDesc, assoc?: number): SelectionRange;
-    extend(from: number, to?: number): SelectionRange;
-    eq(other: SelectionRange, includeAssoc?: boolean): boolean;
-}
-
+/*
 export interface EditorState {
-    /**
-     * The current document.
-     */
     doc: Text;
     selection: EditorSelection;
     tabSize: number;
@@ -70,10 +77,25 @@ export interface EditorState {
     readOnly: boolean;
     wordAt(pos: number): SelectionRange | null;
 }
+*/
+
+export class EditorState {
+    #punkInner: CmEditorState;
+    constructor(punkInner: unknown) {
+        this.#punkInner = assert_cm_editor_state(punkInner);
+    }
+    get doc(): Text {
+        return new Text(this.#punkInner.doc);
+    }
+    get punkInner(): unknown {
+        return this.#punkInner;
+    }
+}
+
 
 export interface EditorStateConfig {
-    doc?: string | Text;
-    selection?: EditorSelection | { anchor: number, head?: number };
+    doc?: string;// | Text;
+    selection?: Selection | { anchor: number, head?: number };
     extensions?: Extension[];
 }
 
@@ -89,10 +111,10 @@ export interface ChangeSet {
 export interface Transaction {
     startState: EditorState;
     changes: ChangeSet | ChangeSet[];
-    selection: EditorSelection | undefined;
+    selection: Selection | undefined;
     scrollIntoView: boolean;
     newDoc: Text;
-    newSelection: EditorSelection;
+    newSelection: Selection;
     state: EditorState;
     docChanged: boolean;
     reconfigured: boolean;
@@ -108,7 +130,7 @@ export type ChangeSpec = {
 export interface TransactionSpec {
     changes?: ChangeSpec;
 }
-
+/*
 export interface EditorView {
     state: EditorState;
     viewport: { from: number, to: number };
@@ -131,10 +153,48 @@ export interface EditorView {
     contentHeight: number;
     destroy(): void;
 }
+*/
 
-export function createEditorView(config?: EditorViewConfig): EditorView {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new CmEditorView(config as any) as unknown as EditorView;
+export class EditorView {
+    readonly #punkInner: CmEditorView;
+    constructor(config: EditorViewConfig) {
+        this.#punkInner = new CmEditorView(cm_editor_view_config(config));
+    }
+    get state(): EditorState {
+        return new EditorState(this.#punkInner.state);
+    }
+    dispatch(arg: {
+        changes?: { from: number, insert: string },
+        selection?: Selection
+    }
+    ) {
+        this.#punkInner.dispatch(arg as unknown as CmTransaction);
+    }
+    get punkInner(): unknown {
+        return this.#punkInner;
+    }
+}
+
+function cm_editor_view_config(config: EditorViewConfig = {}): CmEditorViewConfig {
+    const retval: CmEditorViewConfig = {
+        doc: config.doc,
+        extensions: cm_extensions(config.extensions),
+        parent: config.parent
+    };
+    return retval;
+}
+
+function cm_extension(extension: Extension): CmExtension {
+    return extension;
+}
+
+function cm_extensions(extensions: Extension[]): CmExtension[] {
+    if (Array.isArray(extensions)) {
+        return extensions.map(cm_extension);
+    }
+    else {
+        return [];
+    }
 }
 
 export interface StyleSpec {
@@ -150,12 +210,113 @@ export interface TagStyle {
 
 }
 
-export function createSelectionRange(anchor: number, head: number, goalColumn?: number, bidiLevel?: number): CmSelectionRange {
-    return CmEditorSelection.range(anchor, head, goalColumn, bidiLevel);
+export class Selection {
+    #unkInner: CmEditorSelection;
+    constructor(unkInner: unknown) {
+        this.#unkInner = assert_cm_editor_selection(unkInner);
+    }
+    get ranges(): SelectionRange[] {
+        return this.#unkInner.ranges.map((range) => new SelectionRange(range));
+    }
+    get unkInner(): unknown {
+        return this.#unkInner;
+    }
 }
-export function createSelectionCursor(pos: number, assoc: number, bidiLevel?: number, goalColumn?: number): CmSelectionRange {
-    return CmEditorSelection.cursor(pos, assoc, bidiLevel, goalColumn);
+
+/*
+export interface SelectionRange {
+    from: number;
+    to: number;
+    anchor: number;
+    head: number;
+    empty: boolean;
+    assoc: -1 | 0 | 1;
+    bidiLevel: number | null;
+    goalColumn: number | undefined;
+    map(change: ChangeDesc, assoc?: number): SelectionRange;
+    extend(from: number, to?: number): SelectionRange;
+    eq(other: SelectionRange, includeAssoc?: boolean): boolean;
 }
-export function createEditorSelection(ranges: readonly CmSelectionRange[], mainIndex?: number): CmEditorSelection {
-    return CmEditorSelection.create(ranges, mainIndex);
+*/
+
+export class SelectionRange {
+    #unkInner: CmSelectionRange;
+    constructor(unkInner: unknown) {
+        this.#unkInner = assert_cm_selection_range(unkInner);
+    }
+    /**
+     * The lower boundary of the range.
+     */
+    get from(): number {
+        return this.#unkInner.from;
+    }
+    /**
+     * The upper boundary of the range.
+     */
+    get to(): number {
+        return this.#unkInner.to;
+    }
+    get unkInner(): unknown {
+        return this.#unkInner;
+    }
+}
+
+export function range_selection_range(anchor: number, head: number, goalColumn?: number, bidiLevel?: number): SelectionRange {
+    return new SelectionRange(CmEditorSelection.range(anchor, head, goalColumn, bidiLevel));
+}
+export function cursor_selection_range(pos: number, assoc?: number, bidiLevel?: number, goalColumn?: number): SelectionRange {
+    return new SelectionRange(CmEditorSelection.cursor(pos, assoc, bidiLevel, goalColumn));
+}
+export function selection(ranges: readonly SelectionRange[], mainIndex?: number): Selection {
+    const xs: CmSelectionRange[] = ranges.map((range: SelectionRange) => {
+        return assert_cm_selection_range(range.unkInner);
+    });
+    return new Selection(CmEditorSelection.create(xs, mainIndex));
+}
+
+function assert_cm_editor_selection(unkInner: unknown): CmEditorSelection {
+    if (unkInner instanceof CmEditorSelection) {
+        return unkInner;
+    }
+    else {
+        throw new Error();
+    }
+}
+
+function assert_cm_editor_state(unkInner: unknown): CmEditorState {
+    if (unkInner instanceof CmEditorState) {
+        return unkInner;
+    }
+    else {
+        throw new Error();
+    }
+}
+
+/*
+function assert_cm_editor_view(unkInner: unknown): CmEditorView {
+    if (unkInner instanceof CmEditorView) {
+        return unkInner;
+    }
+    else {
+        throw new Error();
+    }
+}
+*/
+
+function assert_cm_selection_range(unkInner: unknown): CmSelectionRange {
+    if (unkInner instanceof CmSelectionRange) {
+        return unkInner;
+    }
+    else {
+        throw new Error();
+    }
+}
+
+function assert_cm_text(unkInner: unknown): CmText {
+    if (unkInner instanceof CmText) {
+        return unkInner;
+    }
+    else {
+        throw new Error();
+    }
 }
