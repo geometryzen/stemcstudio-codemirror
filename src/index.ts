@@ -1,5 +1,6 @@
 
 export { basicSetup, minimalSetup } from "codemirror";
+import { EditorSelection as CmEditorSelection, SelectionRange as CmSelectionRange } from "@codemirror/state";
 import { EditorView as CmEditorView } from "codemirror";
 
 export interface Extension {
@@ -147,4 +148,14 @@ export function theme(spec: { [selector: string]: StyleSpec }, options?: { dark?
 
 export interface TagStyle {
 
+}
+
+export function createSelectionRange(anchor: number, head: number, goalColumn?: number, bidiLevel?: number): CmSelectionRange {
+    return CmEditorSelection.range(anchor, head, goalColumn, bidiLevel);
+}
+export function createSelectionCursor(pos: number, assoc: number, bidiLevel?: number, goalColumn?: number): CmSelectionRange {
+    return CmEditorSelection.cursor(pos, assoc, bidiLevel, goalColumn);
+}
+export function createEditorSelection(ranges: readonly CmSelectionRange[], mainIndex?: number): CmEditorSelection {
+    return CmEditorSelection.create(ranges, mainIndex);
 }
