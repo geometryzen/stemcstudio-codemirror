@@ -130,11 +130,12 @@ export interface EditorConfig extends EditSessionConfig {
     parent?: Element | DocumentFragment;
 }
 /*
-export interface ChangeSet {
+export class ChangeSet {
     from: number;
     insert: string;
 }
 */
+
 /*
 export interface Transaction {
     startState: EditSession;
@@ -155,11 +156,13 @@ export type ChangeSpec = {
     to?: number;
     insert?: string | EditorDocument;
 } | ChangeSet | readonly ChangeSpec[];
-
+*/
+/*
 export interface TransactionSpec {
     changes?: ChangeSpec;
 }
 */
+
 /*
 export interface EditorView {
     state: EditorState;
@@ -215,6 +218,9 @@ export class Editor {
         }
         this.#refCount++;
     }
+    dispatch(arg: { changes: { from: number, to?: number, insert?: string }[] }) {
+        this.#unkInner.dispatch(arg);
+    }
     focus(): void {
         this.#unkInner.focus();
     }
@@ -243,11 +249,29 @@ export class Editor {
         });
     }
     /**
+     * Sets the start and end positions of a selection in the editor.
+     * @param start The offset into the editor for the start of the selection.
+     * @param end The offset into the editor for the end of the selection.
+     * @param direction The direction in which the selection is performed.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setSelectionRange(start: number | null, end: number | null, direction?: "forward" | "backward" | "none"): void {
+        this.select([create_anchor_range(start, end)]);
+    }
+    /**
      * @hidden
      */
     get unkInner(): CmEditorView {
         return this.#unkInner;
     }
+    get value(): string {
+        return this.session.document.toString();
+    }
+    /*
+    set value(text: string) {
+
+    }
+    */
 }
 
 function cm_editor_view_config(config: EditorConfig = {}): CmEditorViewConfig {
