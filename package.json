@@ -1,6 +1,6 @@
 {
     "name": "@geometryzen/codemirror",
-    "version": "0.9.19",
+    "version": "0.9.20",
     "description": "CodeMirror Editor",
     "exports": {
         ".": {
