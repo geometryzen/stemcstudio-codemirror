@@ -121,13 +121,13 @@ export class EditSession {
 }
 
 export interface EditSessionConfig {
-    document?: string;// | Text;
+    value?: string;// | Text;
     selection?: Selection | { anchor: number, head?: number };
     extensions?: Extension[];
 }
 
 export interface EditorConfig extends EditSessionConfig {
-    parent?: Element | DocumentFragment;
+    parent?: Element | DocumentFragment | null;
 }
 /*
 export class ChangeSet {
@@ -276,7 +276,7 @@ export class Editor {
 
 function cm_editor_view_config(config: EditorConfig = {}): CmEditorViewConfig {
     const retval: CmEditorViewConfig = {
-        doc: config.document,
+        doc: config.value,
         extensions: cm_extensions(config.extensions),
         parent: config.parent,
         selection: unpack_selection(config.selection)

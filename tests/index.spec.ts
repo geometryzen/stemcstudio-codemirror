@@ -10,9 +10,9 @@ test("minimalSetup is an object", function () {
 
 xtest("Document Changes", function () {
     const config: EditorConfig = {
-        document: "...",
+        value: "...",
         extensions: [basicSetup],
-        parent: void 0
+        parent: null
     };
     const view = create_editor(config);
     try {
