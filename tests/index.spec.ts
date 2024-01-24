@@ -8,6 +8,12 @@ test("minimalSetup is an object", function () {
     expect(typeof minimalSetup).toBe('object');
 });
 
+test("Range", function () {
+    expect(typeof minimalSetup).toBe('object');
+    const range: Range = create_anchor_range(4, 5);
+    range.release();
+});
+
 xtest("Document Changes", function () {
     const config: EditorConfig = {
         value: "...",
@@ -20,6 +26,7 @@ xtest("Document Changes", function () {
         view.insert(0, "#!/usr/bin/env node\n");
         view.session.document.toString();
         const range: Range = create_anchor_range(4, 5);
+        range.release();
         const cursor = create_cursor_range(8);
         const ranges: Range[] = [range, cursor];
         view.select(ranges, 1);

@@ -10,30 +10,33 @@ import {
 import { EditorViewConfig as CmEditorViewConfig } from "@codemirror/view";
 import { EditorView as CmEditorView } from "codemirror";
 
+class InnerOuterMap<I, O> {
+    #map: { inner: I, outer: O }[] = [];
+    constructor() {
+    }
+    add(inner: I, outer: O): void {
+        this.#map.push({ inner, outer });
+    }
+    lookup(outer: O): I {
+        const idx = this.#map.findIndex(entry => entry.outer === outer);
+        return this.#map[idx].inner;
+    }
+    remove(outer: O): I {
+        const idx = this.#map.findIndex(entry => entry.outer === outer);
+        const inner = this.#map[idx].inner;
+        this.#map.splice(idx, 1);
+        return inner;
+    }
+    get length(): number {
+        return this.#map.length;
+    }
+}
+
+const editorMap = new InnerOuterMap<CmEditorView, Editor>();
+const rangeMap = new InnerOuterMap<CmSelectionRange, Range>();
+const selectionMap = new InnerOuterMap<CmEditorSelection, Selection>();
+
 export type Extension = unknown;
-/*
-export interface Line {
-    from: number;
-    to: number;
-    number: number;
-    text: string;
-    length: number;
-}
-*/
-/*
-export interface Text {
-    length: number;
-    lines: number;
-    lineAt(n: number): Line;
-    replace(from: number, to: number, text: Text): Text;
-    append(other: Text): Text;
-    slice(from: number, to?: number): Text;
-    sliceString(from: number, to?: number, lineSep?: string): string;
-    eq(other: Text): boolean;
-    toString(): string;
-    toJSON(): string[];
-}
-*/
 
 export class EditorDocument {
     #unkInner: CmText;
@@ -53,47 +56,7 @@ export class EditorDocument {
     toString(): string {
         return this.#unkInner.toString();
     }
-    /**
-     * @hidden
-     */
-    get unkInner(): unknown {
-        return this.#unkInner;
-    }
 }
-/*
-function create_editor_document(): EditorDocument {
-    return new EditorDocument(unkInner);
-}
-*/
-/*
-export interface EditorSelection {
-    ranges: SelectionRange;
-    mainIndex: number;
-    main: SelectionRange;
-    asSingle(): EditorSelection;
-    addRange(range: SelectionRange, main?: boolean): EditorSelection;
-    replaceRange(range: SelectionRange, which?: number): EditorSelection;
-}
-*/
-/*
-export interface ChangeDesc {
-    length: number;
-    newLength: number;
-    empty: boolean;
-    invertedDesc: ChangeDesc;
-    composeDesc(other: ChangeDesc): ChangeDesc;
-}
-*/
-/*
-export interface EditorState {
-    doc: Text;
-    selection: EditorSelection;
-    tabSize: number;
-    lineBreak: string;
-    readOnly: boolean;
-    wordAt(pos: number): SelectionRange | null;
-}
-*/
 
 export class EditSession {
     #unkInner: CmEditorState;
@@ -112,12 +75,6 @@ export class EditSession {
     wordAt(pos: number): Range {
         return new Range(this.#unkInner.wordAt(pos));
     }
-    /**
-     * @hidden
-     */
-    get unkInner(): unknown {
-        return this.#unkInner;
-    }
 }
 
 export interface EditSessionConfig {
@@ -129,64 +86,6 @@ export interface EditSessionConfig {
 export interface EditorConfig extends EditSessionConfig {
     parent?: Element | DocumentFragment | null;
 }
-/*
-export class ChangeSet {
-    from: number;
-    insert: string;
-}
-*/
-
-/*
-export interface Transaction {
-    startState: EditSession;
-    changes: ChangeSet | ChangeSet[];
-    selection: Selection | undefined;
-    scrollIntoView: boolean;
-    newDoc: EditorDocument;
-    newSelection: Selection;
-    state: EditSession;
-    docChanged: boolean;
-    reconfigured: boolean;
-    isUserEvent(event: string): boolean;
-}
-*/
-/*
-export type ChangeSpec = {
-    from: number;
-    to?: number;
-    insert?: string | EditorDocument;
-} | ChangeSet | readonly ChangeSpec[];
-*/
-/*
-export interface TransactionSpec {
-    changes?: ChangeSpec;
-}
-*/
-
-/*
-export interface EditorView {
-    state: EditorState;
-    viewport: { from: number, to: number };
-    visibleRanges: readonly { from: number, to: number }[];
-    inView: boolean;
-    composing: boolean;
-    compositionStarted: boolean;
-    root: DocumentOrShadowRoot;
-    dom: HTMLElement;
-    scrollDOM: HTMLElement;
-    contentDOM: HTMLElement;
-    dispatch(...specs: TransactionSpec[]): void;
-    update(transactions: readonly Transaction[]): void;
-    setState(newState: EditorState): void;
-    themeClasses: string;
-    documentTop: number;
-    documentPadding: { top: number, bottom: number };
-    scaleX: number;
-    scaleY: number;
-    contentHeight: number;
-    destroy(): void;
-}
-*/
 
 export function create_editor(config: EditorConfig) {
     const unkInner = new CmEditorView(cm_editor_view_config(config));
@@ -194,43 +93,36 @@ export function create_editor(config: EditorConfig) {
 }
 
 export class Editor {
-    #unkInner: CmEditorView;
-    #refCount = 0;
+    #refCount = 1;
     /**
      * @hidden
      */
     constructor(unkInner: CmEditorView) {
-        this.#unkInner = assert_cm_editor_view(unkInner);
-        this.addRef();
+        assert_cm_editor_view(unkInner);
+        editorMap.add(unkInner, this);
     }
     #destructor(): void {
-        this.#unkInner.destroy();
-        this.#unkInner = void 0;
+        editorMap.remove(this).destroy();
     }
     get session(): EditSession {
-        return new EditSession(this.#unkInner.state);
+        return new EditSession(editorMap.lookup(this).state);
     }
     addRef(): void {
-        if (this.#refCount === 0) {
-            if (typeof this.#unkInner === 'undefined') {
-                throw new Error("Editor.addRef() zombie!");
-            }
-        }
         this.#refCount++;
     }
-    dispatch(arg: { changes: { from: number, to?: number, insert?: string }[] }) {
-        this.#unkInner.dispatch(arg);
+    dispatch(arg: { changes: { from: number, to?: number, insert?: string }[] }): void {
+        editorMap.lookup(this).dispatch(arg);
     }
     focus(): void {
-        this.#unkInner.focus();
+        editorMap.lookup(this).focus();
     }
     insert(from: number, text: string): void {
-        this.#unkInner.dispatch({
+        editorMap.lookup(this).dispatch({
             changes: { from: from, insert: text }
         });
     }
     get hasFocus(): boolean {
-        return this.#unkInner.hasFocus;
+        return editorMap.lookup(this).hasFocus;
     }
     release(): void {
         this.#refCount--;
@@ -240,11 +132,11 @@ export class Editor {
     }
     select(ranges: readonly Range[], mainIndex?: number): void {
         const cmranges: CmSelectionRange[] = ranges.map((range: Range) => {
-            return assert_cm_selection_range(range.unkInner);
+            return assert_cm_selection_range(rangeMap.lookup(range));
         });
         const cmselection = CmEditorSelection.create(cmranges, mainIndex);
 
-        this.#unkInner.dispatch({
+        editorMap.lookup(this).dispatch({
             selection: cmselection
         });
     }
@@ -256,13 +148,13 @@ export class Editor {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setSelectionRange(start: number | null, end: number | null, direction?: "forward" | "backward" | "none"): void {
-        this.select([create_anchor_range(start, end)]);
-    }
-    /**
-     * @hidden
-     */
-    get unkInner(): CmEditorView {
-        return this.#unkInner;
+        const range = create_anchor_range(start, end);
+        try {
+            this.select([range]);
+        }
+        finally {
+            range.release();
+        }
     }
     get value(): string {
         return this.session.document.toString();
@@ -308,48 +200,48 @@ export interface TagStyle {
 }
 */
 
+/**
+ * A reference-counted wrapper over the CodeMirror EditorSelection.
+ */
 export class Selection {
     #unkInner: CmEditorSelection;
+    #refCount = 1;
     /**
      * @hidden
      */
     constructor(unkInner: CmEditorSelection) {
         this.#unkInner = assert_cm_editor_selection(unkInner);
+        selectionMap.add(unkInner, this);
     }
     get ranges(): Range[] {
         return this.#unkInner.ranges.map((range) => new Range(range));
     }
-    /**
-     * @hidden
-     */
-    get unkInner(): CmEditorSelection {
-        return this.#unkInner;
+    addRef(): void {
+        this.#refCount++;
+    }
+    release(): void {
+        this.#refCount--;
+        if (this.#refCount === 0) {
+            selectionMap.remove(this);
+        }
     }
 }
 
-/*
-export interface SelectionRange {
-    from: number;
-    to: number;
-    anchor: number;
-    head: number;
-    empty: boolean;
-    assoc: -1 | 0 | 1;
-    bidiLevel: number | null;
-    goalColumn: number | undefined;
-    map(change: ChangeDesc, assoc?: number): SelectionRange;
-    extend(from: number, to?: number): SelectionRange;
-    eq(other: SelectionRange, includeAssoc?: boolean): boolean;
-}
-*/
-
+/**
+ * A reference-counted wrapper over the CodeMirror SelectionRange.
+ */
 export class Range {
     #unkInner: CmSelectionRange;
+    #refCount = 1;
     /**
      * @hidden
      */
     constructor(unkInner: CmSelectionRange) {
         this.#unkInner = assert_cm_selection_range(unkInner);
+        rangeMap.add(unkInner, this);
+    }
+    #destructor(): void {
+        rangeMap.remove(this);
     }
     /**
      * The lower boundary of the range.
@@ -363,11 +255,14 @@ export class Range {
     get to(): number {
         return this.#unkInner.to;
     }
-    /**
-     * @hidden
-     */
-    get unkInner(): CmSelectionRange {
-        return this.#unkInner;
+    addRef(): void {
+        this.#refCount++;
+    }
+    release(): void {
+        this.#refCount--;
+        if (this.#refCount === 0) {
+            this.#destructor();
+        }
     }
 }
 
@@ -377,9 +272,15 @@ export function create_anchor_range(anchor: number, head: number, goalColumn?: n
 export function create_cursor_range(pos: number, assoc?: number, bidiLevel?: number, goalColumn?: number): Range {
     return new Range(CmEditorSelection.cursor(pos, assoc, bidiLevel, goalColumn));
 }
+/**
+ * 
+ * @param ranges 
+ * @param mainIndex 
+ * @returns 
+ */
 export function create_selection(ranges: readonly Range[], mainIndex?: number): Selection {
     const cmranges: CmSelectionRange[] = ranges.map((range: Range) => {
-        return assert_cm_selection_range(range.unkInner);
+        return assert_cm_selection_range(rangeMap.lookup(range));
     });
     return new Selection(CmEditorSelection.create(cmranges, mainIndex));
 }
@@ -431,7 +332,7 @@ function assert_cm_text(unkInner: unknown): CmText {
 
 function unpack_selection(selection: Selection | { anchor: number, head?: number } | undefined): CmEditorSelection | { anchor: number, head?: number } | undefined {
     if (selection instanceof Selection) {
-        const unkInner = selection.unkInner;
+        const unkInner = selectionMap.lookup(selection);
         return assert_cm_editor_selection(unkInner);
     }
     else if (typeof selection === 'object') {
