@@ -121,7 +121,7 @@ export class EditSession {
 }
 
 export interface EditSessionConfig {
-    value?: string;// | Text;
+    value?: string | null;// | Text;
     selection?: Selection | { anchor: number, head?: number };
     extensions?: Extension[];
 }
@@ -267,11 +267,9 @@ export class Editor {
     get value(): string {
         return this.session.document.toString();
     }
-    /*
     set value(text: string) {
-
+        this.dispatch({ changes: [{ from: 0, to: this.value.length, insert: text }] });
     }
-    */
 }
 
 function cm_editor_view_config(config: EditorConfig = {}): CmEditorViewConfig {

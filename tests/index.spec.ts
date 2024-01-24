@@ -24,6 +24,7 @@ xtest("Document Changes", function () {
         const ranges: Range[] = [range, cursor];
         view.select(ranges, 1);
         view.focus();
+        view.value = "0123456789";
         const hasFocus: boolean = view.hasFocus;
         // eslint-disable-next-line no-console
         console.log("hasFocus", hasFocus);
