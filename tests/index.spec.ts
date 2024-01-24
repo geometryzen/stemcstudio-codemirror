@@ -1,15 +1,10 @@
-import { basicSetup, create_anchor_range, create_cursor_range, create_editor, EditorConfig, EditSession, minimalSetup, Range } from '../src/index';
+import { basic_extension, create_anchor_range, create_cursor_range, create_editor, EditorConfig, EditSession, fixed_height_extension, Range } from '../src/index';
 
 test("basicSetup is an object", function () {
-    expect(typeof basicSetup).toBe('object');
-});
-
-test("minimalSetup is an object", function () {
-    expect(typeof minimalSetup).toBe('object');
+    expect(typeof basic_extension).toBe('function');
 });
 
 test("Range", function () {
-    expect(typeof minimalSetup).toBe('object');
     const range: Range = create_anchor_range(4, 5);
     range.release();
 });
@@ -17,7 +12,7 @@ test("Range", function () {
 xtest("Document Changes", function () {
     const config: EditorConfig = {
         value: "...",
-        extensions: [basicSetup],
+        extensions: [basic_extension(), fixed_height_extension("300px")],
         parent: null
     };
     const view = create_editor(config);

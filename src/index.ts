@@ -1,5 +1,4 @@
 
-export { basicSetup, minimalSetup } from "codemirror";
 import {
     EditorSelection as CmEditorSelection,
     EditorState as CmEditorState,
@@ -8,7 +7,7 @@ import {
     Text as CmText
 } from "@codemirror/state";
 import { EditorViewConfig as CmEditorViewConfig } from "@codemirror/view";
-import { EditorView as CmEditorView } from "codemirror";
+import { basicSetup, EditorView as CmEditorView } from "codemirror";
 
 class InnerOuterMap<I, O> {
     #map: { inner: I, outer: O }[] = [];
@@ -195,10 +194,17 @@ export function create_theme(spec: { [selector: string]: StyleSpec }, options?: 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return CmEditorView.theme(spec as any, options);
 }
-/*
-export interface TagStyle {
+
+export function basic_extension(): Extension {
+    return basicSetup;
 }
-*/
+
+export function fixed_height_extension(height: string, dark?: boolean): Extension {
+    return create_theme({
+        "&": { height: height },
+        ".cm-scroller": { overflow: "auto" }
+    }, { dark: !!dark });
+}
 
 /**
  * A reference-counted wrapper over the CodeMirror EditorSelection.
