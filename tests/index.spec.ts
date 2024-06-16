@@ -1,7 +1,7 @@
-import { basic_extension, create_anchor_range, create_cursor_range, create_editor, EditorConfig, EditSession, fixed_height_extension, Range } from '../src/index';
+import { basic_extension, create_anchor_range, create_cursor_range, create_editor, EditorConfig, EditSession, fixed_height_extension, Range } from "../src/index";
 
 test("basicSetup is an object", function () {
-    expect(typeof basic_extension).toBe('function');
+    expect(typeof basic_extension).toBe("function");
 });
 
 test("Range", function () {
@@ -36,8 +36,7 @@ xtest("Document Changes", function () {
         const to: number = wordRange.to;
         // eslint-disable-next-line no-console
         console.log("wordAt", from, to);
-    }
-    finally {
+    } finally {
         view.release();
     }
 });

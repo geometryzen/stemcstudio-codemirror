@@ -1,27 +1,19 @@
-
-import {
-    EditorSelection as CmEditorSelection,
-    EditorState as CmEditorState,
-    Extension as CmExtension,
-    SelectionRange as CmSelectionRange,
-    Text as CmText
-} from "@codemirror/state";
+import { EditorSelection as CmEditorSelection, EditorState as CmEditorState, Extension as CmExtension, SelectionRange as CmSelectionRange, Text as CmText } from "@codemirror/state";
 import { EditorViewConfig as CmEditorViewConfig } from "@codemirror/view";
 import { basicSetup, EditorView as CmEditorView } from "codemirror";
 
 class InnerOuterMap<I, O> {
-    #map: { inner: I, outer: O }[] = [];
-    constructor() {
-    }
+    #map: { inner: I; outer: O }[] = [];
+    constructor() {}
     add(inner: I, outer: O): void {
         this.#map.push({ inner, outer });
     }
     lookup(outer: O): I {
-        const idx = this.#map.findIndex(entry => entry.outer === outer);
+        const idx = this.#map.findIndex((entry) => entry.outer === outer);
         return this.#map[idx].inner;
     }
     remove(outer: O): I {
-        const idx = this.#map.findIndex(entry => entry.outer === outer);
+        const idx = this.#map.findIndex((entry) => entry.outer === outer);
         const inner = this.#map[idx].inner;
         this.#map.splice(idx, 1);
         return inner;
@@ -46,10 +38,10 @@ export class EditorDocument {
         this.#unkInner = assert_cm_text(unkInner);
     }
     /**
-     * 
+     *
      */
     /**
-     * 
+     *
      * @returns the document as a string, using newline characters to separate lines.
      */
     toString(): string {
@@ -77,8 +69,8 @@ export class EditSession {
 }
 
 export interface EditSessionConfig {
-    value?: string | null;// | Text;
-    selection?: Selection | { anchor: number, head?: number };
+    value?: string | null; // | Text;
+    selection?: Selection | { anchor: number; head?: number };
     extensions?: Extension[];
 }
 
@@ -109,7 +101,7 @@ export class Editor {
     addRef(): void {
         this.#refCount++;
     }
-    dispatch(arg: { changes: { from: number, to?: number, insert?: string }[] }): void {
+    dispatch(arg: { changes: { from: number; to?: number; insert?: string }[] }): void {
         editorMap.lookup(this).dispatch(arg);
     }
     focus(): void {
@@ -150,8 +142,7 @@ export class Editor {
         const range = create_anchor_range(start, end);
         try {
             this.select([range]);
-        }
-        finally {
+        } finally {
             range.release();
         }
     }
@@ -159,7 +150,9 @@ export class Editor {
         return this.session.document.toString();
     }
     set value(text: string) {
-        this.dispatch({ changes: [{ from: 0, to: this.value.length, insert: text }] });
+        this.dispatch({
+            changes: [{ from: 0, to: this.value.length, insert: text }]
+        });
     }
 }
 
@@ -180,15 +173,12 @@ function cm_extension(extension: Extension): CmExtension {
 function cm_extensions(extensions: Extension[]): CmExtension[] {
     if (Array.isArray(extensions)) {
         return extensions.map(cm_extension);
-    }
-    else {
+    } else {
         return [];
     }
 }
 
-export interface StyleSpec {
-
-}
+export interface StyleSpec {}
 
 export function create_theme(spec: { [selector: string]: StyleSpec }, options?: { dark?: boolean }): Extension {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -200,10 +190,13 @@ export function basic_extension(): Extension {
 }
 
 export function fixed_height_extension(height: string, dark?: boolean): Extension {
-    return create_theme({
-        "&": { height: height },
-        ".cm-scroller": { overflow: "auto" }
-    }, { dark: !!dark });
+    return create_theme(
+        {
+            "&": { height: height },
+            ".cm-scroller": { overflow: "auto" }
+        },
+        { dark: !!dark }
+    );
 }
 
 /**
@@ -279,10 +272,10 @@ export function create_cursor_range(pos: number, assoc?: number, bidiLevel?: num
     return new Range(CmEditorSelection.cursor(pos, assoc, bidiLevel, goalColumn));
 }
 /**
- * 
- * @param ranges 
- * @param mainIndex 
- * @returns 
+ *
+ * @param ranges
+ * @param mainIndex
+ * @returns
  */
 export function create_selection(ranges: readonly Range[], mainIndex?: number): Selection {
     const cmranges: CmSelectionRange[] = ranges.map((range: Range) => {
@@ -294,8 +287,7 @@ export function create_selection(ranges: readonly Range[], mainIndex?: number): 
 function assert_cm_editor_selection(unkInner: unknown): CmEditorSelection {
     if (unkInner instanceof CmEditorSelection) {
         return unkInner;
-    }
-    else {
+    } else {
         throw new Error();
     }
 }
@@ -303,8 +295,7 @@ function assert_cm_editor_selection(unkInner: unknown): CmEditorSelection {
 function assert_cm_editor_state(unkInner: unknown): CmEditorState {
     if (unkInner instanceof CmEditorState) {
         return unkInner;
-    }
-    else {
+    } else {
         throw new Error();
     }
 }
@@ -312,8 +303,7 @@ function assert_cm_editor_state(unkInner: unknown): CmEditorState {
 function assert_cm_editor_view(unkInner: unknown): CmEditorView {
     if (unkInner instanceof CmEditorView) {
         return unkInner;
-    }
-    else {
+    } else {
         throw new Error();
     }
 }
@@ -321,8 +311,7 @@ function assert_cm_editor_view(unkInner: unknown): CmEditorView {
 function assert_cm_selection_range(unkInner: unknown): CmSelectionRange {
     if (unkInner instanceof CmSelectionRange) {
         return unkInner;
-    }
-    else {
+    } else {
         throw new Error();
     }
 }
@@ -330,24 +319,20 @@ function assert_cm_selection_range(unkInner: unknown): CmSelectionRange {
 function assert_cm_text(unkInner: unknown): CmText {
     if (unkInner instanceof CmText) {
         return unkInner;
-    }
-    else {
+    } else {
         throw new Error();
     }
 }
 
-function unpack_selection(selection: Selection | { anchor: number, head?: number } | undefined): CmEditorSelection | { anchor: number, head?: number } | undefined {
+function unpack_selection(selection: Selection | { anchor: number; head?: number } | undefined): CmEditorSelection | { anchor: number; head?: number } | undefined {
     if (selection instanceof Selection) {
         const unkInner = selectionMap.lookup(selection);
         return assert_cm_editor_selection(unkInner);
-    }
-    else if (typeof selection === 'object') {
+    } else if (typeof selection === "object") {
         return selection;
-    }
-    else if (typeof selection === 'undefined') {
+    } else if (typeof selection === "undefined") {
         return void 0;
-    }
-    else {
+    } else {
         throw new TypeError("selection");
     }
 }

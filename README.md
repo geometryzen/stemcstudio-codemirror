@@ -1,4 +1,4 @@
-# stemcstudio-codemirror
+A wrapper around the CodeMirror editor for use in STEMCstudio.
 
 [![version](https://img.shields.io/npm/v/@geometryzen/codemirror.svg)](https://www.npmjs.com/package/@geometryzen/codemirror) 
 
